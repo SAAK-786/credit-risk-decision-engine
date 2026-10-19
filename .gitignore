@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+.env
+.env.*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# macOS / editors
+.DS_Store
+.vscode/
+.idea/
+
+# Datasets: only the attributed UCI raw CSV is intended for publication
+/data/raw/*
+!/data/raw/.gitkeep
+!/data/raw/credit_default_uci.csv
+/data/processed/*
+!/data/processed/.gitkeep
+
+# Generated tables
+/outputs/tables/*
+!/outputs/tables/.gitkeep
+
+# Generated figures
+/outputs/figures/*
+!/outputs/figures/.gitkeep
+
+# Temporary files
+*.log
+*.tmp
