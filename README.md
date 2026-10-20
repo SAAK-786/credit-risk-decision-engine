@@ -1,6 +1,6 @@
 # Credit Risk Decision Engine
 
-> **Work in progress — feature engineering completed; modelling is next.** A predictive model and a decision engine have **not yet** been implemented.
+> **Work in progress — Day 4 logistic-regression baseline completed.** The model has been evaluated on validation data; the held-out test set, model comparison, and hypothetical decision simulation remain outstanding.
 
 ## Overview
 
@@ -17,7 +17,7 @@ The dataset includes **30,000 existing credit-card customers**, 23 predictor var
 | 1. Data acquisition and audit | Exploratory notebook completed | Import data, inspect metadata, data-quality checks, class distribution |
 | 2. Cleaning and EDA | Exploratory notebook completed | Undocumented category codes, repayment behaviour, credit limits, demographic comparisons |
 | 3. Further feature engineering | Completed (notebook) | Credit utilisation, payment consistency, repayment delays, balance trends, risk-group EDA and descriptive validation |
-| 4. Predictive modelling and validation | Planned | Baselines, suitable classifiers, discrimination and calibration |
+| 4. Baseline modelling and validation | Baseline completed (notebook) | Stratified split, train-only preprocessing, logistic regression, validation discrimination/calibration, coefficient and threshold analysis; further models and held-out testing pending |
 | 5. Hypothetical decision simulation | Planned | Threshold trade-offs with fairness and selection-bias limitations |
 
 ### Exploratory findings
@@ -30,7 +30,25 @@ The dataset includes **30,000 existing credit-card customers**, 23 predictor var
 - Day 3's payment-to-bill ratio is undefined for 966 customers with no positive bill history; these records are retained with an indicator.
 - Associations by repayment behaviour, credit limit or demographics do **not** establish causal effects or justify automatic lending decisions.
 
-These are descriptive results reported in the exploratory notebooks, not externally validated model-performance claims.
+These Day 1–3 findings are descriptive results from the exploratory notebooks, not causal effects or externally validated model-performance claims.
+
+### Day 4 — Logistic-regression baseline (validation only)
+
+The [Day 4 notebook](notebooks/04_logistic_regression_baseline.ipynb) selects **11 financially motivated features** from the engineered dataset and uses a stratified **60% / 20% / 20%** training, validation and held-out test split. A scikit-learn pipeline fits median imputation, standardisation and logistic regression using the training split only.
+
+The notebook reports the following **validation** results (6,000 customers):
+
+| Metric | Validation result |
+| --- | ---: |
+| ROC-AUC | 0.751 |
+| Average precision | 0.486 |
+| Brier score | 0.146 |
+| Accuracy at threshold 0.50 | 80.13% |
+| Precision at threshold 0.50 | 64.03% |
+| Recall at threshold 0.50 | 23.21% |
+| F1 score at threshold 0.50 | 0.341 |
+
+At the default 0.50 classification threshold, the notebook reports **308 true positives**, **1,019 false negatives**, and **173 false positives**. It also examines calibration, standardised coefficients and threshold trade-offs. No final classification threshold is selected. These results are reported by the author in the notebook; the published notebook has cleared execution outputs and has not been independently rerun as part of this repository update. **The held-out test set is not evaluated in Day 4.**
 
 ## Repository structure
 
@@ -39,13 +57,15 @@ credit-risk-decision-engine/
 ├── notebooks/
 │   ├── 01_data_audit.ipynb
 │   ├── 02_cleaning_eda.ipynb
-│   └── 03_feature_engineering.ipynb
+│   ├── 03_feature_engineering.ipynb
+│   └── 04_logistic_regression_baseline.ipynb
 ├── data/
 │   ├── raw/
 │   └── processed/
 ├── outputs/
 │   ├── figures/
-│   └── tables/
+│   ├── tables/
+│   └── models/ (generated locally; ignored by Git)
 ├── docs/
 │   └── roadmap.md
 ├── README.md
@@ -58,7 +78,7 @@ credit-risk-decision-engine/
 Clone this repository and create a virtual environment:
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 jupyter lab
@@ -68,9 +88,11 @@ Run **`notebooks/01_data_audit.ipynb` first**. It downloads UCI dataset 350 via 
 
 Then run **`notebooks/02_cleaning_eda.ipynb`**, which reads the saved raw CSV, performs cleaning, feature summaries and descriptive analysis, and exports `data/processed/credit_default_cleaned.csv` for Day 3.
 
-**Day 3:** `notebooks/03_feature_engineering.ipynb` builds customer-level features from April–September repayment, billing and payment histories; checks feature ranges and missingness; explores default rates by utilisation and payment consistency; and saves `data/processed/credit_default_features.csv`, summary tables and a figure. Day 3 reads the cleaned CSV exported by Day 2, so run the notebooks in order (01 → 02 → 03). Notebook execution outputs are saved from prior runs; this repository update has not independently rerun the complete pipeline.
+**Day 3:** `notebooks/03_feature_engineering.ipynb` builds customer-level features from April–September repayment, billing and payment histories; checks feature ranges and missingness; explores default rates by utilisation and payment consistency; and saves `data/processed/credit_default_features.csv`, summary tables and a figure.
 
-The notebooks preserve the original analysis code, with additional explanatory Markdown in notebook 01. Saved outputs have been cleared for a cleaner Git history; execute notebooks locally to regenerate results.
+**Day 4:** `notebooks/04_logistic_regression_baseline.ipynb` loads the processed Day 3 feature file, creates stratified training/validation/test splits, fits an interpretable logistic-regression baseline, and analyses validation performance, calibration, coefficients and threshold trade-offs. The notebook saves the fitted pipeline to `outputs/models/logistic_regression_baseline.joblib`, figures to `outputs/figures/`, and validation metrics, predictions and split assignments to `outputs/tables/`. All generated artefacts remain local and are excluded from Git.
+
+Run the notebooks in order **01 → 02 → 03 → 04**, because each subsequent stage relies on data exported by the preceding stage. Saved cell outputs have been cleared from the committed notebooks; execute them locally to regenerate results and figures. This repository update has not independently rerun the entire pipeline.
 
 ## Dataset and responsible use
 
@@ -78,14 +100,16 @@ The notebooks preserve the original analysis code, with additional explanatory M
 
 The original UCI dataset was created by **I-Cheng Yeh**: *Default of Credit Card Clients*, UCI Machine Learning Repository. Source: https://doi.org/10.24432/C55S3H. Licence: **CC BY 4.0** — https://creativecommons.org/licenses/by/4.0/.
 
-`data/raw/credit_default_uci.csv` is prepared for inclusion in this repository under that licence. It was retrieved with `ucimlrepo.fetch_ucirepo(id=350)`, assembled from customer IDs, features and target, converted to CSV, and given the descriptive column names defined in notebook 01. Customer rows and source values were retained; no cleaning or feature engineering was applied to this raw export. These conversion and column-name changes are modifications to the source representation. The UCI licence applies to the dataset; no endorsement by its creator is implied.
+`data/raw/credit_default_uci.csv` is included in this repository under that licence. It was retrieved with `ucimlrepo.fetch_ucirepo(id=350)`, assembled from customer IDs, features and target, converted to CSV, and given the descriptive column names defined in notebook 01. Customer rows and source values were retained; no cleaning or feature engineering was applied to this raw export. These conversion and column-name changes are modifications to the source representation. The UCI licence applies to the dataset; no endorsement by its creator is implied.
 
 Other raw data, processed datasets (including `data/processed/credit_default_cleaned.csv` and `data/processed/credit_default_features.csv`) and generated tables remain excluded from Git version control.
 
 ## Known issues
 
 - Day 3's full-dataset utilisation quartiles are **descriptive EDA only** and must not be reused as fitted transformations across validation/test folds.
-- Model evaluation design, leak-free training pipelines, testing, modelling and deployment are not yet implemented.
+- Day 4 performs an initial train-only preprocessing pipeline and validation evaluation, but **not** the final held-out test evaluation, model comparison, cross-validation tuning, subgroup stability/fairness analysis, or deployment.
+- Day 4's validation results do not demonstrate generalisability to future borrowers or applicant populations. The model is an educational baseline, not a validated lending policy.
+- The saved `.joblib` model and customer-level prediction/split files are generated only on the user's computer and are **not** tracked in Git.
 
 See [the roadmap](docs/roadmap.md) for next steps.
 
@@ -101,4 +125,4 @@ git push
 
 You can also upload updated files through the GitHub web interface. Larger changes can use feature branches and pull requests.
 
-**Status: In development.** No trained credit-risk model, production lending decision system or deployment is claimed.
+**Status: In development.** An initial logistic-regression baseline is trained within Day 4, but no final test-set performance, production lending decision system or deployment is claimed.

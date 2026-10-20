@@ -31,11 +31,23 @@ This is a living plan, not a list of finished deliverables.
 
 ## Stage 4 — Model training and evaluation
 
-- [ ] Design stratified training, validation and held-out testing
-- [ ] Train a simple baseline and suitable classifiers (e.g., logistic regression, Random Forest, XGBoost)
-- [ ] Tune hyperparameters with cross-validation without leakage
-- [ ] Evaluate ROC-AUC, PR-AUC, precision/recall and threshold trade-offs
-- [ ] Evaluate calibration, stability and subgroup error patterns
+**Day 4: Initial logistic-regression baseline completed; further model development remains.**
+
+- [x] Define an 11-feature baseline and exclude customer IDs and demographic fields
+- [x] Create stratified 60% training, 20% validation and 20% held-out test splits
+- [x] Fit median imputation, standardisation and logistic regression using training data only
+- [x] Evaluate validation ROC-AUC, average precision, Brier score, accuracy, precision, recall and F1
+- [x] Produce a validation confusion matrix, ROC/precision–recall curves and a calibration plot
+- [x] Interpret standardised coefficients and odds ratios, noting non-causality and correlated predictors
+- [x] Explore validation classification-threshold trade-offs without selecting a final threshold
+- [x] Save the fitted pipeline and validation outputs locally (excluded from Git)
+- [ ] Compare against additional baseline/classifier approaches (e.g., Random Forest, gradient boosting)
+- [ ] Tune and compare candidates with appropriate cross-validation while preventing leakage
+- [ ] Investigate stability, subgroup performance and possible fairness concerns
+- [ ] Select and freeze the modelling approach, then evaluate once on the held-out test set
+- [ ] Document final model limitations and the suitability of any risk-decision use case
+
+Day 4 reports validation **ROC-AUC 0.751**, **average precision 0.486**, and **Brier score 0.146**. These are notebook-reported validation results, not final test results.
 
 ## Stage 5 — Hypothetical decisions
 

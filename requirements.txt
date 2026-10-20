@@ -3,3 +3,5 @@ pandas
 matplotlib
 ucimlrepo
 jupyterlab
+scikit-learn
+joblib

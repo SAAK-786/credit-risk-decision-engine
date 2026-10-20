@@ -35,3 +35,6 @@ venv/
 # Temporary files
 *.log
 *.tmp
+
+# Trained models and local fitted pipelines
+/outputs/models/
